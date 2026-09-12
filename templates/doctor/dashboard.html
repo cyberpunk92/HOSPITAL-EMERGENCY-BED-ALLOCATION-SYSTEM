@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% from 'partials/stat_cards.html' import status_badge %}
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<!-- Header: name (left) | ward/specialty (center) -->
+<div class="hebas-card mb-4">
+    <div class="row align-items-center p-3 g-2 text-center text-md-start">
+        <div class="col-md-4">
+            <div class="text-muted small">Doctor</div>
+            <div class="h5 mb-0">Dr. {{ profile.name if profile else user.name }}</div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="text-muted small">Ward / Specialty</div>
+            <div class="h5 mb-0">{{ profile.specialization or profile.department or '—' if profile else '—' }}</div>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <span class="badge {{ 'bg-danger-soft text-danger' if is_emergency else 'bg-info-soft text-info' }} fs-6">
+                {{ 'Emergency Doctor' if is_emergency else 'Ward Doctor' }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-primary-soft"><i class="bi bi-people"></i></div>
+        <div><div class="stat-value">{{ my_patients|length }}</div><div class="stat-label">My Active Patients</div></div></div></div>
+    {% if is_emergency %}
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-warning-soft"><i class="bi bi-hourglass-split"></i></div>
+        <div><div class="stat-value">{{ triage|length }}</div><div class="stat-label">Awaiting Triage</div></div></div></div>
+    {% endif %}
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-{{ 7 if is_emergency else 12 }}">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-people"></i> My Patients</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Adm</th><th>Patient</th><th>Complaint</th><th>Diagnosis</th><th>Bed</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                    {% for a in my_patients %}
+                        <tr>
+                            <td>#{{ a.admission_id }}</td><td>{{ a.full_name }}</td>
+                            <td class="small">{{ a.chief_complaint }}</td>
+                            <td class="small">{{ a.primary_diagnosis or '—' }}</td>
+                            <td>{{ a.bed_number or '—' }}</td>
+                            <td>{{ status_badge(a.admission_status) }}</td>
+                            <td class="text-end"><a href="{{ url_for('admissions.detail', admission_id=a.admission_id) }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-muted py-4">No patients assigned to you.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if is_emergency %}
+    <div class="col-lg-5">
+        <div class="hebas-card">
+            <div class="hebas-card-header text-danger"><i class="bi bi-hourglass-split"></i> Triage Queue</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Patient</th><th>Pri</th><th>Complaint</th><th></th></tr></thead>
+                    <tbody>
+                    {% for t in triage %}
+                        <tr><td>{{ t.full_name }}</td>
+                            <td><span class="badge bg-danger-soft text-danger">P{{ t.triage_priority }}</span></td>
+                            <td class="small">{{ t.chief_complaint }}</td>
+                            <td class="text-end"><a href="{{ url_for('admissions.detail', admission_id=t.admission_id) }}" class="btn btn-sm btn-outline-danger">Review</a></td></tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">Queue empty.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

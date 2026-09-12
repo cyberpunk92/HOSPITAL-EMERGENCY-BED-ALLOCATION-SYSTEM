@@ -1,0 +1,32 @@
+{# Reusable pagination control.
+   Usage: {% from 'partials/pagination.html' import pagination %}
+          {{ pagination(page, total_pages, 'patients.list_patients', request.args) }} #}
+{% macro pagination(page, total_pages, endpoint, args={}) %}
+{% if total_pages > 1 %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-center mb-0">
+    <li class="page-item {{ 'disabled' if page <= 1 }}">
+      <a class="page-link" href="{{ url_for(endpoint, **dict(args, page=page-1)) }}">&laquo;</a>
+    </li>
+    {% set start = [1, page-2]|max %}
+    {% set end = [total_pages, page+2]|min %}
+    {% if start > 1 %}
+      <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **dict(args, page=1)) }}">1</a></li>
+      {% if start > 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% endif %}
+    {% for p in range(start, end + 1) %}
+      <li class="page-item {{ 'active' if p == page }}">
+        <a class="page-link" href="{{ url_for(endpoint, **dict(args, page=p)) }}">{{ p }}</a>
+      </li>
+    {% endfor %}
+    {% if end < total_pages %}
+      {% if end < total_pages - 1 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+      <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **dict(args, page=total_pages)) }}">{{ total_pages }}</a></li>
+    {% endif %}
+    <li class="page-item {{ 'disabled' if page >= total_pages }}">
+      <a class="page-link" href="{{ url_for(endpoint, **dict(args, page=page+1)) }}">&raquo;</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endmacro %}

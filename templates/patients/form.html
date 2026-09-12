@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit Patient' if mode == 'edit' else 'Register Patient' }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">{{ 'Edit Patient' if mode == 'edit' else 'Register Patient' }}</h4>
+    <a href="{{ url_for('patients.list_patients') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="hebas-card p-4" style="max-width: 720px;">
+    <form method="post" novalidate data-validate
+          action="{{ url_for('patients.edit', patient_id=patient_id) if mode == 'edit' else url_for('patients.new') }}">
+        <div class="row g-3">
+            <div class="col-md-8"><label class="form-label">Full Name *</label>
+                <input name="full_name" class="form-control" value="{{ form.full_name or '' }}" data-rule="required name" minlength="2" required></div>
+            <div class="col-md-4"><label class="form-label">Gender *</label>
+                <select name="gender" class="form-select" data-rule="required" required>
+                    <option value="">—</option>
+                    <option value="M" {{ 'selected' if form.gender == 'M' }}>Male</option>
+                    <option value="F" {{ 'selected' if form.gender == 'F' }}>Female</option>
+                    <option value="OTHER" {{ 'selected' if form.gender == 'OTHER' }}>Other</option>
+                </select></div>
+            <div class="col-md-4"><label class="form-label">Date of Birth *</label>
+                <input type="date" name="dob" class="form-control" value="{{ form.dob or '' }}" data-rule="required date-not-future" required></div>
+            <div class="col-md-8"><label class="form-label">CNIC *</label>
+                <input name="national_id" class="form-control" value="{{ form.national_id or '' }}" placeholder="13 digits" data-rule="required cnic" inputmode="numeric" maxlength="13" required></div>
+            <div class="col-md-6"><label class="form-label">Insurance ID</label>
+                <input name="insurance_id" class="form-control" value="{{ form.insurance_id or '' }}"></div>
+            <div class="col-md-6"><label class="form-label">Emergency Contact</label>
+                <input name="emergency_contact" class="form-control" value="{{ form.emergency_contact or '' }}" data-rule="phone" inputmode="numeric" maxlength="11"></div>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" data-loading="Saving...">
+                <i class="bi bi-check-lg"></i> {{ 'Save Changes' if mode == 'edit' else 'Register' }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

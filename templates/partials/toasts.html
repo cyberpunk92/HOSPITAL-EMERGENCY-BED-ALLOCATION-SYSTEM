@@ -1,0 +1,18 @@
+{# Flashed messages are emitted as hidden data nodes; hebas.js renders them as
+   Bootstrap 5 toasts. A <noscript> alert fallback is provided for no-JS clients. #}
+<div id="hebas-flash-data" hidden>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <span data-msg="{{ message }}" data-cat="{{ 'danger' if category == 'error' else category }}"></span>
+    {% endfor %}
+  {% endwith %}
+</div>
+<noscript>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="hebas-flash p-2">
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }}">{{ message }}</div>
+      {% endfor %}
+    </div>{% endif %}
+  {% endwith %}
+</noscript>

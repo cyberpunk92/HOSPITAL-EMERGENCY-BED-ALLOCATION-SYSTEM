@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% from 'partials/stat_cards.html' import status_badge %}
+{% block title %}Sanitization{% endblock %}
+
+{% block content %}
+<h4 class="mb-1">Bed Sanitization</h4>
+<p class="text-muted">{{ user.name }} &middot; {{ hospital_name }}</p>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="hebas-card">
+            <div class="hebas-card-header text-danger"><i class="bi bi-droplet-half"></i> Beds Pending Cleaning ({{ pending|length }})</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Bed</th><th>Equipment</th><th>Since</th><th>Status</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                    {% for s in pending %}
+                        <tr id="row-{{ s.sanitization_id }}">
+                            <td><strong>{{ s.bed_number }}</strong></td>
+                            <td class="small">{{ s.equipment_type or '—' }}</td>
+                            <td class="small">{{ s.start_timestamp.strftime('%m-%d %H:%M') if s.start_timestamp else '' }}</td>
+                            <td>{{ status_badge(s.checking_status) }}</td>
+                            <td class="text-end">
+                                <form method="post" action="{{ url_for('sanitization.complete', log_id=s.sanitization_id) }}"
+                                      class="d-inline sanitize-form">
+                                    <button type="button" class="btn btn-sm btn-primary sanitize-btn"
+                                            onclick="sanitize(this)"><i class="bi bi-stars"></i> Sanitize</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">No beds pending cleaning. 🎉</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-clock-history"></i> Cleaning History</div>
+            <div class="table-responsive" style="max-height: 460px; overflow-y:auto;">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Bed</th><th>Status</th><th>Completed</th></tr></thead>
+                    <tbody>
+                    {% for s in history %}
+                        <tr><td>{{ s.bed_number }}</td><td>{{ status_badge(s.checking_status) }}</td>
+                            <td class="small">{{ s.end_timestamp.strftime('%m-%d %H:%M') if s.end_timestamp else '—' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">No history.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 3-second cleaning simulation, then submit.
+function sanitize(btn) {
+    let secs = 3;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sanitizing ' + secs + 's';
+    const t = setInterval(function () {
+        secs--;
+        if (secs <= 0) {
+            clearInterval(t);
+            btn.closest('form').submit();
+        } else {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Sanitizing ' + secs + 's';
+        }
+    }, 1000);
+}
+</script>
+{% endblock %}

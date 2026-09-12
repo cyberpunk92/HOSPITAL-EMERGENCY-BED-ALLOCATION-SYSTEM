@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Bed {{ bed.bed_number }}{% endblock %}
+
+{% set badge = {'AVAILABLE':'bg-success-soft text-success','OCCUPIED':'bg-danger-soft text-danger','PENDING_CLEANING':'bg-warning-soft'} %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-hospital"></i> Bed {{ bed.bed_number }}</h4>
+    <a href="{{ url_for('beds.list_beds') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-info-circle"></i> Details</div>
+            <div class="p-3">
+                <dl class="row mb-3 small">
+                    <dt class="col-5">Status</dt><dd class="col-7"><span class="badge {{ badge.get(bed.current_status,'bg-secondary-soft') }}">{{ bed.current_status }}</span></dd>
+                    <dt class="col-5">Type</dt><dd class="col-7">{{ bed.bed_type }}</dd>
+                    <dt class="col-5">Size</dt><dd class="col-7">{{ bed.bed_size }}</dd>
+                    <dt class="col-5">Ward</dt><dd class="col-7">{{ bed.ward_name or 'unallocated' }}</dd>
+                </dl>
+                <div class="mb-2"><strong class="small">Features</strong></div>
+                {% for f in features %}<span class="badge bg-accent-soft text-dark me-1">{{ f.feature_name }}</span>{% else %}<span class="text-muted small">None</span>{% endfor %}
+
+                <hr>
+                <p class="small text-muted mb-0"><i class="bi bi-info-circle"></i> Bed status is set automatically by the workflow
+                    (assignment, discharge, sanitization). It cannot be changed manually.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-clock-history"></i> Status History (audit)</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>From</th><th>To</th><th>When</th></tr></thead>
+                    <tbody>
+                    {% for h in history %}
+                        <tr><td>{{ h.old_value }}</td><td>{{ h.new_value }}</td>
+                            <td>{{ h.action_timestamp.strftime('%Y-%m-%d %H:%M') if h.action_timestamp else '' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">No status changes recorded.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

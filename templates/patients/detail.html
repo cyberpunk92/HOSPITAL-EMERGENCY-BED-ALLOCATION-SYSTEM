@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-person-vcard"></i> {{ patient.full_name }}</h4>
+    <div class="d-flex gap-2">
+        {% if 'Admin Staff' in user.roles %}
+        <a href="{{ url_for('patients.edit', patient_id=patient.patient_id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+        <form method="post" action="{{ url_for('patients.archive', patient_id=patient.patient_id) }}"
+              data-confirm="Archive patient '{{ patient.full_name }}'? They will be hidden from the active list.">
+            <button class="btn btn-outline-warning btn-sm"><i class="bi bi-archive"></i> Archive</button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('patients.list_patients') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-card-list"></i> Demographics</div>
+            <div class="p-3">
+                <dl class="row mb-0 small">
+                    <dt class="col-5">Patient ID</dt><dd class="col-7">#{{ patient.patient_id }}</dd>
+                    <dt class="col-5">Gender</dt><dd class="col-7">{{ patient.gender }}</dd>
+                    <dt class="col-5">Age</dt><dd class="col-7">{{ patient.age }}</dd>
+                    <dt class="col-5">Date of Birth</dt><dd class="col-7">{{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else '—' }}</dd>
+                    <dt class="col-5">National ID</dt><dd class="col-7">{{ patient.national_id }}</dd>
+                    <dt class="col-5">Insurance</dt><dd class="col-7">{{ patient.insurance_id or '—' }}</dd>
+                    <dt class="col-5">Emergency</dt><dd class="col-7">{{ patient.emergency_contact or '—' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-person-badge"></i> Portal Login</div>
+            <div class="p-3">
+                {% if login %}
+                    <p class="mb-1"><i class="bi bi-check-circle text-success"></i> Linked account</p>
+                    <p class="small mb-0 text-muted">{{ login.email }}
+                        {% if login.is_active %}<span class="badge bg-success-soft text-success">Active</span>
+                        {% else %}<span class="badge bg-danger-soft text-danger">Inactive</span>{% endif %}</p>
+                {% elif 'Admin Staff' in user.roles %}
+                    <p class="small text-muted">No portal login yet. Create one so the patient can view their own status.</p>
+                    <form method="post" action="{{ url_for('patients.create_login', patient_id=patient.patient_id) }}">
+                        <div class="mb-2"><input type="email" name="email" class="form-control form-control-sm" placeholder="patient@email.com" required></div>
+                        <div class="mb-2"><input type="text" name="password" class="form-control form-control-sm" value="Hebas@123" placeholder="Password"></div>
+                        <button class="btn btn-sm btn-primary w-100"><i class="bi bi-key"></i> Create Login</button>
+                    </form>
+                {% else %}
+                    <p class="small text-muted mb-0">No portal login linked.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-clock-history"></i> Admission History</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>ID</th><th>Arrival</th><th>Triage</th><th>Complaint</th><th>Diagnosis</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for a in admissions %}
+                        <tr>
+                            <td>#{{ a.admission_id }}</td>
+                            <td>{{ a.arrival_timestamp.strftime('%Y-%m-%d %H:%M') if a.arrival_timestamp else '—' }}</td>
+                            <td><span class="badge bg-danger-soft text-danger">P{{ a.triage_priority }}</span></td>
+                            <td>{{ a.chief_complaint }}</td>
+                            <td>{{ a.primary_diagnosis or '—' }}</td>
+                            <td>{{ a.admission_status }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No admissions on record.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% from 'partials/stat_cards.html' import status_badge %}
+{% block title %}My Health Portal{% endblock %}
+
+{% block content %}
+<h4 class="mb-1">Welcome, {{ patient.full_name }}</h4>
+<p class="text-muted">Patient #{{ patient.patient_id }} &middot; {{ patient.gender }} &middot; {{ patient.age }} years &middot; {{ hospital_name }}</p>
+
+{% if adm %}
+<div class="row g-3">
+    <!-- Care team + status -->
+    <div class="col-lg-7">
+        <div class="hebas-card mb-3" style="border-left: 4px solid var(--hebas-accent);">
+            <div class="hebas-card-header"><i class="bi bi-clipboard2-pulse"></i> My Admission &middot; {{ status_badge(adm.admission_status) }}</div>
+            <div class="p-3">
+                <div class="row g-3">
+                    <div class="col-md-4"><div class="stat-label">Doctor</div><div class="fw-semibold">{{ adm.doctor_name or '—' }}</div></div>
+                    <div class="col-md-4"><div class="stat-label">Nurse</div><div class="fw-semibold">{{ nurse or '—' }}</div></div>
+                    <div class="col-md-4"><div class="stat-label">Ward</div><div class="fw-semibold">{{ adm.ward_name or '—' }}</div></div>
+                    <div class="col-md-4"><div class="stat-label">Bed</div><div class="fw-semibold">{{ adm.bed_number or '—' }}</div></div>
+                    <div class="col-md-4"><div class="stat-label">Diagnosis</div><div class="fw-semibold">{{ adm.primary_diagnosis or 'Pending' }}</div></div>
+                    <div class="col-md-4"><div class="stat-label">Glucose Status</div><div class="fw-semibold">{{ glucose.result_status if glucose else 'Not done' }}</div></div>
+                    {% if adm.admission_status == 'DISCHARGED' and adm.discharge_timestamp %}
+                    <div class="col-md-6"><div class="stat-label">Discharge Date</div><div class="fw-semibold">{{ adm.discharge_timestamp.strftime('%Y-%m-%d') }}</div></div>
+                    <div class="col-md-6"><div class="stat-label">Discharge Time</div><div class="fw-semibold">{{ adm.discharge_timestamp.strftime('%H:%M') }}</div></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Vitals -->
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-heart-pulse"></i> BP &amp; Sugar Results</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>BP</th><th>Sugar</th><th>Recorded</th></tr></thead>
+                    <tbody>
+                    {% for v in vitals %}
+                        <tr><td>{% if v.systolic_bp %}{{ v.systolic_bp }}/{{ v.diastolic_bp }}{% else %}—{% endif %}</td>
+                            <td>{{ v.glucose_level or '—' }}</td>
+                            <td class="small">{{ v.recorded_at.strftime('%m-%d %H:%M') if v.recorded_at else '' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">No results yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="col-lg-5">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-signpost-2"></i> My Care Timeline</div>
+            <div class="p-3">
+                <ul class="hebas-timeline">
+                    {% for step in timeline %}
+                    <li class="{{ 'done' if step.done }}">
+                        <div class="t-dot"><i class="bi {{ 'bi-check-lg' if step.done else 'bi-dot' }}"></i></div>
+                        <div>
+                            <div class="fw-semibold">{{ step.label }}</div>
+                            {% if step.detail %}<div class="small text-muted">{{ step.detail }}</div>{% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="hebas-card p-4 text-muted"><i class="bi bi-info-circle"></i> You have no admission records yet.</div>
+{% endif %}
+
+<!-- History -->
+<div class="hebas-card mt-3">
+    <div class="hebas-card-header"><i class="bi bi-clock-history"></i> Admission History</div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Date</th><th>Complaint</th><th>Diagnosis</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for a in admissions %}
+                <tr><td>#{{ a.admission_id }}</td>
+                    <td>{{ a.arrival_timestamp.strftime('%Y-%m-%d') if a.arrival_timestamp else '—' }}</td>
+                    <td>{{ a.chief_complaint }}</td><td>{{ a.primary_diagnosis or '—' }}</td>
+                    <td>{{ status_badge(a.admission_status) }}</td></tr>
+            {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No admissions on record.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

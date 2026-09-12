@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}New User{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Create Staff User</h4>
+    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="hebas-card p-4" style="max-width: 820px;">
+    <form method="post" novalidate data-validate>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">First Name *</label>
+                <input name="fname" class="form-control" value="{{ form.fname or '' }}" data-rule="required alpha" required></div>
+            <div class="col-md-6"><label class="form-label">Last Name *</label>
+                <input name="lname" class="form-control" value="{{ form.lname or '' }}" data-rule="required alpha" required></div>
+            <div class="col-md-6"><label class="form-label">Email *</label>
+                <input type="email" name="email" class="form-control" value="{{ form.email or '' }}" data-rule="required email" required></div>
+            <div class="col-md-6"><label class="form-label">Phone</label>
+                <input name="phone" class="form-control" value="{{ form.phone or '' }}" data-rule="numeric" inputmode="numeric"></div>
+            <div class="col-md-6"><label class="form-label">Password *</label>
+                <input type="text" name="password" class="form-control" value="{{ form.password or '' }}" data-rule="required" required></div>
+            <div class="col-md-6"><label class="form-label">Role *</label>
+                <select name="role" id="role" class="form-select" required onchange="toggleRoleFields()">
+                    <option value="">Select role...</option>
+                    {% for r in roles %}<option value="{{ r }}" {{ 'selected' if form.role == r }}>{{ r }}</option>{% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6 role-field" data-roles="Emergency Doctor,Ward Doctor">
+                <label class="form-label">Specialization</label>
+                <input name="specialization" class="form-control" value="{{ form.specialization or '' }}"></div>
+            <div class="col-md-6 role-field" data-roles="Emergency Doctor,Ward Doctor">
+                <label class="form-label">License No</label>
+                <input name="license_no" class="form-control" value="{{ form.license_no or '' }}" placeholder="auto if blank"></div>
+
+            <div class="col-md-6 role-field" data-roles="Admin Staff">
+                <label class="form-label">Department</label>
+                <input name="department" class="form-control" value="{{ form.department or '' }}"></div>
+
+            <div class="col-md-6 role-field" data-roles="Nurse,Maintenance Staff">
+                <label class="form-label">Assigned Ward</label>
+                <select name="assigned_ward" class="form-select">
+                    <option value="">—</option>
+                    {% for w in wards %}<option value="{{ w.ward_id }}">{{ w.ward_name or w.ward_type }}</option>{% endfor %}
+                </select></div>
+
+            <div class="col-md-6 role-field" data-roles="Nurse,Maintenance Staff,Admin Staff,Service Dispatcher">
+                <label class="form-label">Shift Timing</label>
+                <select name="shift_timing" class="form-select">
+                    <option value="">—</option><option>Morning</option><option>Evening</option><option>Night</option>
+                </select></div>
+
+            <div class="col-md-6 role-field" data-roles="Ambulance Dispatcher,Service Dispatcher">
+                <label class="form-label">Ambulance Type</label>
+                <input name="ambulance_type" class="form-control" value="{{ form.ambulance_type or '' }}" placeholder="Basic Life Support"></div>
+            <div class="col-md-6 role-field" data-roles="Service Dispatcher">
+                <label class="form-label">Service Name</label>
+                <input name="service_name" class="form-control" value="{{ form.service_name or '' }}" placeholder="Rescue 1122"></div>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary"><i class="bi bi-check-lg"></i> Create User</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleRoleFields() {
+    const role = document.getElementById('role').value;
+    document.querySelectorAll('.role-field').forEach(el => {
+        const roles = (el.dataset.roles || '').split(',');
+        el.style.display = roles.includes(role) ? '' : 'none';
+    });
+}
+document.addEventListener('DOMContentLoaded', toggleRoleFields);
+</script>
+{% endblock %}

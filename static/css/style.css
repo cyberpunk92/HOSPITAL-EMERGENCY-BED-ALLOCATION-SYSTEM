@@ -1,0 +1,264 @@
+:root {
+    --hebas-primary: #0d3b66;
+    --hebas-primary-dark: #0a2e50;
+    --hebas-accent: #1789a6;
+    --hebas-danger: #d64550;
+    --hebas-success: #2e9e6b;
+    --hebas-warning: #e0a458;
+    --hebas-bg: #f1f4f8;
+    --hebas-sidebar-w: 250px;
+}
+
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--hebas-bg);
+    color: #1f2d3d;
+}
+
+/* ---------- Layout ---------- */
+.hebas-layout { display: flex; min-height: 100vh; }
+
+.hebas-sidebar {
+    width: var(--hebas-sidebar-w);
+    background: var(--hebas-primary);
+    color: #cdd9e5;
+    position: fixed;
+    inset: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+.hebas-brand {
+    display: flex; align-items: center; gap: .6rem;
+    padding: 1.15rem 1.25rem;
+    font-size: 1.25rem; font-weight: 700; color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.hebas-brand i { color: var(--hebas-accent); font-size: 1.5rem; }
+
+.hebas-nav { padding: .75rem 0; display: flex; flex-direction: column; }
+.hebas-nav a {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .7rem 1.25rem;
+    color: #cdd9e5; text-decoration: none;
+    font-size: .94rem; border-left: 3px solid transparent;
+    transition: background .15s, color .15s;
+}
+.hebas-nav a i { width: 1.2rem; text-align: center; }
+.hebas-nav a:hover { background: rgba(255,255,255,.07); color: #fff; }
+.hebas-nav a.active {
+    background: rgba(23,137,166,.18);
+    color: #fff; border-left-color: var(--hebas-accent);
+}
+
+.hebas-main { flex: 1; margin-left: var(--hebas-sidebar-w); display: flex; flex-direction: column; min-width: 0; }
+
+.hebas-topbar {
+    background: #fff; height: 62px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    position: sticky; top: 0; z-index: 900;
+}
+.hebas-topbar-title { font-weight: 600; font-size: 1.1rem; color: var(--hebas-primary); }
+.hebas-user-btn {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--hebas-bg); border: 1px solid #e2e8f0; color: #334155;
+}
+.hebas-role-badge { background: var(--hebas-accent); color: #fff; font-weight: 500; }
+.hebas-bell { color: #475569; font-size: 1.2rem; text-decoration: none; }
+.hebas-bell:hover { color: var(--hebas-primary); }
+.hebas-bell-badge {
+    position: absolute; top: -6px; right: -8px;
+    background: var(--hebas-danger); color: #fff;
+    font-size: .62rem; font-weight: 600; line-height: 1;
+    padding: .18rem .35rem; border-radius: 999px;
+}
+.hebas-nav .badge { font-size: .62rem; }
+
+.hebas-content { padding: 1.5rem; flex: 1; }
+
+/* ---------- Cards ---------- */
+.hebas-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(16,42,67,.08);
+    overflow: hidden;
+    transition: box-shadow .18s ease, transform .18s ease;
+}
+.hebas-card.stat:hover {
+    box-shadow: 0 6px 18px rgba(16,42,67,.13);
+    transform: translateY(-2px);
+}
+.hebas-sidebar-toggle {
+    background: var(--hebas-bg); border: 1px solid #e2e8f0; color: var(--hebas-primary);
+    font-size: 1.1rem; line-height: 1; padding: .35rem .55rem;
+}
+.hebas-overlay { display: none; }
+.hebas-card-header {
+    padding: .9rem 1.15rem; font-weight: 600; color: var(--hebas-primary);
+    border-bottom: 1px solid #eef2f7; display: flex; align-items: center; gap: .5rem;
+}
+.hebas-card.stat { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.25rem; }
+.stat-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+}
+.stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.stat-label { font-size: .82rem; color: #6b7a90; }
+
+.bg-primary-soft   { background: rgba(13,59,102,.12);  color: var(--hebas-primary); }
+.bg-accent-soft    { background: rgba(23,137,166,.14); color: var(--hebas-accent); }
+.bg-danger-soft    { background: rgba(214,69,80,.14);  color: var(--hebas-danger); }
+.bg-success-soft   { background: rgba(46,158,107,.14); color: var(--hebas-success); }
+.bg-warning-soft   { background: rgba(224,164,88,.18); color: #b9772a; }
+.bg-info-soft      { background: rgba(23,137,166,.14); color: var(--hebas-accent); }
+.bg-secondary-soft { background: rgba(100,116,139,.14); color: #475569; }
+
+/* ---------- Login ---------- */
+.hebas-login-wrap {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 1.5rem;
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #0d3b66 0%, #0a2e50 55%, #061d33 100%);
+}
+/* soft floating blobs for depth (subtle, professional) */
+.hebas-login-wrap::before,
+.hebas-login-wrap::after {
+    content: ""; position: absolute; border-radius: 50%;
+    filter: blur(10px); animation: hebasFloat 16s ease-in-out infinite; z-index: 1;
+}
+.hebas-login-wrap::before {
+    width: 440px; height: 440px; top: -130px; left: -110px;
+    background: radial-gradient(circle at 30% 30%, rgba(23,137,166,.55), transparent 70%);
+}
+.hebas-login-wrap::after {
+    width: 380px; height: 380px; bottom: -130px; right: -100px;
+    background: radial-gradient(circle at 30% 30%, rgba(46,158,107,.42), transparent 70%);
+    animation-delay: -8s;
+}
+@keyframes hebasFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50%      { transform: translate(26px, 30px); }
+}
+.hebas-login-card {
+    position: relative; z-index: 2;
+    background: rgba(255,255,255,.93);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.45);
+    border-radius: 20px; padding: 2.5rem 2.25rem;
+    width: 100%; max-width: 430px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.38);
+    animation: hebasRise .6s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes hebasRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.hebas-login-brand { text-align: center; margin-bottom: 1.6rem; }
+.hebas-login-logo {
+    width: 66px; height: 66px; border-radius: 18px; margin: 0 auto .8rem;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--hebas-primary), var(--hebas-accent));
+    box-shadow: 0 8px 22px rgba(13,59,102,.38);
+}
+.hebas-login-logo i { font-size: 2rem; color: #fff; }
+.hebas-login-brand h1 { font-size: 1.55rem; font-weight: 700; color: var(--hebas-primary); margin: .2rem 0 .1rem; letter-spacing: .4px; }
+.hebas-login-brand .sub { color: #6b7a90; font-size: .85rem; margin: 0; }
+.hebas-login-brand .hosp { color: var(--hebas-accent); font-weight: 600; margin-top: .35rem; }
+.hebas-login-card .form-label { font-weight: 600; font-size: .8rem; color: #44566c; margin-bottom: .25rem; }
+.hebas-login-card .input-group-text { background: #f1f4f8; border-right: 0; color: var(--hebas-primary); }
+.hebas-login-card .form-control, .hebas-login-card .form-select { padding-top: .55rem; padding-bottom: .55rem; }
+.hebas-login-card .input-group .form-control, .hebas-login-card .input-group .form-select { border-left: 0; }
+.hebas-login-card .form-control:focus, .hebas-login-card .form-select:focus { box-shadow: none; border-color: var(--hebas-accent); }
+.hebas-pw-toggle { border: 1px solid #ced4da; border-left: 0; background: #fff; color: #6b7a90; }
+.hebas-pw-toggle:hover { color: var(--hebas-primary); }
+.hebas-login-footer { position: relative; z-index: 2; color: rgba(255,255,255,.7); font-size: .8rem; margin-top: 1.25rem; text-align: center; }
+.hebas-login-theme {
+    position: absolute; top: 1.1rem; right: 1.1rem; z-index: 3;
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.12);
+    color: #fff; font-size: 1.05rem; transition: background .15s;
+}
+.hebas-login-theme:hover { background: rgba(255,255,255,.24); }
+
+/* login dark mode */
+html.dark .hebas-login-card { background: rgba(30,41,59,.92); border-color: rgba(148,163,184,.25); }
+html.dark .hebas-login-brand h1 { color: #93c5fd; }
+html.dark .hebas-login-card .form-label { color: #cbd5e1; }
+html.dark .hebas-login-card .input-group-text { background: #0f172a; color: #93c5fd; border-color: #334155; }
+html.dark .hebas-pw-toggle { background: #0f172a; color: #cbd5e1; border-color: #334155; }
+
+.btn-primary { background: var(--hebas-primary); border-color: var(--hebas-primary); }
+.btn-primary:hover { background: var(--hebas-primary-dark); border-color: var(--hebas-primary-dark); }
+
+.hebas-flash { margin-bottom: 1rem; }
+.hebas-login-wrap .hebas-flash { position: fixed; top: 1rem; right: 1rem; max-width: 360px; z-index: 1100; }
+
+/* ---------- Toasts ---------- */
+.hebas-toast { box-shadow: 0 6px 20px rgba(16,42,67,.18); color: #fff; }
+.hebas-toast .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+.toast-success { background: var(--hebas-success); }
+.toast-danger  { background: var(--hebas-danger); }
+.toast-warning { background: #b9772a; }
+.toast-info    { background: var(--hebas-accent); }
+
+/* ---------- Status badges (consistent scheme) ---------- */
+.hebas-badge-cleaning   { background: rgba(224,164,88,.22); color: #9a5f1e; }
+.hebas-badge-discharged { background: rgba(13,110,253,.14); color: #0d6efd; }
+
+/* ---------- Patient timeline ---------- */
+.hebas-timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+.hebas-timeline li { display: flex; gap: .75rem; padding-bottom: 1.1rem; position: relative; }
+.hebas-timeline li:not(:last-child)::before {
+    content: ""; position: absolute; left: 13px; top: 26px; bottom: 0; width: 2px; background: #e2e8f0;
+}
+.hebas-timeline .t-dot {
+    width: 28px; height: 28px; border-radius: 50%; flex: 0 0 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: #e2e8f0; color: #94a3b8; z-index: 1; font-size: .85rem;
+}
+.hebas-timeline li.done .t-dot { background: var(--hebas-success); color: #fff; }
+.hebas-timeline li.done:not(:last-child)::before { background: var(--hebas-success); }
+.hebas-brand-sub { font-size: .68rem; font-weight: 500; color: rgba(255,255,255,.6); letter-spacing: .3px; }
+
+/* ---------- Dark mode ---------- */
+html.dark body { background: #0f172a; color: #e2e8f0; }
+html.dark .hebas-topbar { background: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+html.dark .hebas-topbar-title { color: #93c5fd; }
+html.dark .hebas-card { background: #1e293b; color: #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+html.dark .hebas-card-header { color: #cbd5e1; border-bottom-color: #334155; }
+html.dark .stat-label { color: #94a3b8; }
+html.dark .table { color: #e2e8f0; --bs-table-bg: transparent; --bs-table-color: #e2e8f0; }
+html.dark .table thead th { color: #cbd5e1; border-color: #334155; }
+html.dark .table td, html.dark .table th { border-color: #334155; }
+html.dark .table-hover > tbody > tr:hover > * { background: #273449; color: #e2e8f0; }
+html.dark .list-group-item { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+html.dark .form-control, html.dark .form-select {
+    background: #0f172a; color: #e2e8f0; border-color: #334155;
+}
+html.dark .form-control::placeholder { color: #64748b; }
+html.dark .hebas-user-btn { background: #0f172a; color: #cbd5e1; border-color: #334155; }
+html.dark .hebas-bell { color: #cbd5e1; }
+html.dark .dropdown-menu { background: #1e293b; border-color: #334155; }
+html.dark .dropdown-item { color: #e2e8f0; }
+html.dark .dropdown-item:hover { background: #273449; }
+html.dark .text-muted { color: #94a3b8 !important; }
+html.dark .border { border-color: #334155 !important; }
+html.dark .bg-light { background: #0f172a !important; }
+html.dark .nav-tabs .nav-link { color: #cbd5e1; }
+html.dark .nav-tabs .nav-link.active { background: #1e293b; border-color: #334155 #334155 #1e293b; color: #93c5fd; }
+html.dark .hebas-timeline li:not(:last-child)::before { background: #334155; }
+html.dark .hebas-timeline .t-dot { background: #334155; color: #94a3b8; }
+
+/* ---------- Responsive ---------- */
+.hebas-sidebar { transition: transform .25s ease; }
+
+@media (max-width: 768px) {
+    .hebas-sidebar { transform: translateX(-100%); }
+    .hebas-main { margin-left: 0; }
+    body.sidebar-open .hebas-sidebar { transform: translateX(0); }
+    body.sidebar-open .hebas-overlay {
+        display: block; position: fixed; inset: 0;
+        background: rgba(6,29,51,.45); z-index: 950;
+    }
+}

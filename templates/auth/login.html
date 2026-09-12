@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Sign In{% endblock %}
+
+{% block guest_content %}
+<div class="hebas-login-wrap">
+    <!-- Dark mode toggle (reuses the app-wide theme engine) -->
+    <button type="button" class="hebas-login-theme" title="Toggle dark mode" onclick="hebasToggleTheme()">
+        <i class="bi bi-moon-stars" id="themeIcon"></i>
+    </button>
+
+    <div class="hebas-login-card">
+        <div class="hebas-login-brand">
+            <div class="hebas-login-logo"><i class="bi bi-heart-pulse"></i></div>
+            <h1>{{ app_name }}</h1>
+            <p class="sub">{{ app_full_name }}</p>
+            <p class="hosp"><i class="bi bi-hospital"></i> {{ hospital_name }}</p>
+        </div>
+
+        <form method="post" action="{{ url_for('auth.login') }}" novalidate>
+            <!-- Role selector -->
+            <div class="mb-3">
+                <label for="role" class="form-label">Login As</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                    <select class="form-select" id="role" name="role">
+                        <option value="">Detect automatically</option>
+                        {% for r in roles %}
+                        <option value="{{ r }}" {{ 'selected' if selected_role == r }}>{{ r }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="{{ email }}" placeholder="name@hebas.pk" required autofocus>
+                </div>
+            </div>
+
+            <!-- Password with show/hide -->
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control" id="password" name="password"
+                           placeholder="Your password" required>
+                    <button class="btn hebas-pw-toggle" type="button" id="pwToggle"
+                            title="Show / hide password" aria-label="Show or hide password">
+                        <i class="bi bi-eye" id="pwIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <i class="bi bi-box-arrow-in-right"></i> Sign In
+            </button>
+        </form>
+    </div>
+
+    <p class="hebas-login-footer"><i class="bi bi-shield-lock"></i> Authorized hospital staff only &middot; &copy; {{ app_name }}</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Password show / hide
+(function () {
+    const btn = document.getElementById('pwToggle');
+    const pw = document.getElementById('password');
+    const icon = document.getElementById('pwIcon');
+    if (btn && pw) btn.addEventListener('click', function () {
+        const show = pw.type === 'password';
+        pw.type = show ? 'text' : 'password';
+        icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+})();
+</script>
+{% endblock %}

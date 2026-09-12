@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% from 'partials/pagination.html' import pagination %}
+{% block title %}Patients{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Patients <span class="text-muted small">({{ result.total }})</span></h4>
+    <a href="{{ url_for('patients.new') }}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Register Patient</a>
+</div>
+
+<div class="hebas-card mb-3">
+    <form class="row g-2 p-3" method="get">
+        <div class="col-md-10"><input name="q" value="{{ q }}" class="form-control" placeholder="Search by name or CNIC..."></div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-primary" data-loading="Searching..."><i class="bi bi-search"></i> Search</button></div>
+    </form>
+</div>
+
+<div class="hebas-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Name</th><th>Gender</th><th>Age</th><th>CNIC</th><th>Insurance</th><th>Contact</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for p in result.rows %}
+                <tr>
+                    <td>#{{ p.patient_id }}</td>
+                    <td>{{ p.full_name }}</td>
+                    <td>{{ p.gender }}</td>
+                    <td>{{ p.age }}</td>
+                    <td>{{ p.national_id }}</td>
+                    <td>{{ p.insurance_id or '—' }}</td>
+                    <td>{{ p.emergency_contact or '—' }}</td>
+                    <td class="text-end text-nowrap">
+                        <a href="{{ url_for('patients.detail', patient_id=p.patient_id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        {% if 'Admin Staff' in user.roles %}
+                        <a href="{{ url_for('patients.edit', patient_id=p.patient_id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <form method="post" action="{{ url_for('patients.archive', patient_id=p.patient_id) }}" class="d-inline"
+                              data-confirm="Archive patient '{{ p.full_name }}'? They will be hidden from the active list.">
+                            <button class="btn btn-sm btn-outline-warning">Archive</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No patients found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{ pagination(result.page, result.total_pages, 'patients.list_patients', request.args) }}
+{% endblock %}

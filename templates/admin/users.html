@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">User Management</h4>
+    <a href="{{ url_for('admin.user_new') }}" class="btn btn-primary"><i class="bi bi-person-plus"></i> New User</a>
+</div>
+
+<div class="hebas-card mb-3">
+    <form class="row g-2 p-3" method="get">
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search name or email...">
+        </div>
+        <div class="col-md-4">
+            <select name="role" class="form-select">
+                <option value="">All roles</option>
+                {% for r in roles %}<option value="{{ r }}" {{ 'selected' if role_filter == r }}>{{ r }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-search"></i> Filter</button></div>
+    </form>
+</div>
+
+<div class="hebas-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Roles</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for u in users %}
+                <tr>
+                    <td>#{{ u.userid }}</td>
+                    <td>{{ u.fname }} {{ u.lname }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.phone or '—' }}</td>
+                    <td>{% if u.roles %}<span class="badge bg-accent-soft text-dark">{{ u.roles }}</span>{% else %}<span class="text-muted">none</span>{% endif %}</td>
+                    <td>
+                        {% if u.is_active %}<span class="badge bg-success-soft text-success">Active</span>
+                        {% else %}<span class="badge bg-danger-soft text-danger">Inactive</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.userid) }}" class="d-inline">
+                            <button class="btn btn-sm btn-outline-secondary">{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No users found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

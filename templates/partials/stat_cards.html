@@ -1,0 +1,47 @@
+{# Reusable dashboard widgets.
+   {% from 'partials/stat_cards.html' import stat_cards, status_badge %} #}
+
+{# The 5 standard HEBAS dashboard cards. `o` needs: total_patients,
+   active_admissions, available_beds, occupied_beds, cleaning_beds. #}
+{% macro stat_cards(o) %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg">
+    <div class="hebas-card stat"><div class="stat-icon bg-primary-soft"><i class="bi bi-person-lines-fill"></i></div>
+      <div><div class="stat-value">{{ o.total_patients }}</div><div class="stat-label">Total Patients</div></div></div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="hebas-card stat"><div class="stat-icon bg-info-soft"><i class="bi bi-clipboard2-pulse"></i></div>
+      <div><div class="stat-value">{{ o.active_admissions }}</div><div class="stat-label">Active Admissions</div></div></div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="hebas-card stat"><div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+      <div><div class="stat-value">{{ o.available_beds }}</div><div class="stat-label">Available Beds</div></div></div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="hebas-card stat"><div class="stat-icon bg-danger-soft"><i class="bi bi-person-fill"></i></div>
+      <div><div class="stat-value">{{ o.occupied_beds }}</div><div class="stat-label">Occupied Beds</div></div></div>
+  </div>
+  <div class="col-6 col-lg">
+    <div class="hebas-card stat"><div class="stat-icon bg-warning-soft"><i class="bi bi-droplet-half"></i></div>
+      <div><div class="stat-value">{{ o.cleaning_beds }}</div><div class="stat-label">Pending Cleaning</div></div></div>
+  </div>
+</div>
+{% endmacro %}
+
+{# Consistent status badge: Available=green, Occupied=red, Pending Cleaning=yellow,
+   Discharged=blue, Active=green. #}
+{% macro status_badge(status) %}
+  {%- set s = (status or '')|upper -%}
+  {%- set m = {
+      'AVAILABLE': 'badge bg-success-soft text-success',
+      'ACTIVE': 'badge bg-success-soft text-success',
+      'OCCUPIED': 'badge bg-danger-soft text-danger',
+      'PENDING_CLEANING': 'badge hebas-badge-cleaning',
+      'IN_PROGRESS': 'badge hebas-badge-cleaning',
+      'PENDING_INSPECTION': 'badge bg-warning-soft',
+      'DISCHARGED': 'badge hebas-badge-discharged',
+      'COMPLETED': 'badge bg-secondary-soft text-muted',
+      'CANCELLED': 'badge bg-secondary-soft text-muted'
+  } -%}
+  <span class="{{ m.get(s, 'badge bg-secondary-soft text-muted') }}">{{ status }}</span>
+{% endmacro %}

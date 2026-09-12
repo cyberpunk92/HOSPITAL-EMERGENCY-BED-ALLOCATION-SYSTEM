@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Admissions{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Admissions</h4>
+    <a href="{{ url_for('admissions.new') }}" class="btn btn-primary"><i class="bi bi-clipboard2-plus"></i> New Admission</a>
+</div>
+
+{% if triage %}
+<div class="hebas-card mb-3">
+    <div class="hebas-card-header text-danger"><i class="bi bi-hourglass-split"></i> Awaiting Triage / Doctor ({{ triage|length }})</div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Patient</th><th>Priority</th><th>Arrival</th><th>Complaint</th><th></th></tr></thead>
+            <tbody>
+            {% for t in triage %}
+                <tr>
+                    <td>#{{ t.admission_id }}</td><td>{{ t.full_name }}</td>
+                    <td><span class="badge bg-danger-soft text-danger">P{{ t.triage_priority }}</span></td>
+                    <td>{{ t.arrival_timestamp.strftime('%m-%d %H:%M') if t.arrival_timestamp else '' }}</td>
+                    <td>{{ t.chief_complaint }}</td>
+                    <td class="text-end"><a href="{{ url_for('admissions.detail', admission_id=t.admission_id) }}" class="btn btn-sm btn-outline-danger">Triage</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="hebas-card mb-3">
+    <form class="row g-2 p-3" method="get">
+        <div class="col-md-4"><select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">All</option>
+            {% for s in ['ACTIVE','DISCHARGED'] %}<option value="{{ s }}" {{ 'selected' if status_filter == s }}>{{ s }}</option>{% endfor %}
+        </select></div>
+    </form>
+</div>
+
+<div class="hebas-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Patient</th><th>Priority</th><th>Complaint</th><th>Diagnosis</th><th>Doctor</th><th>Bed</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for a in admissions %}
+                <tr>
+                    <td>#{{ a.admission_id }}</td>
+                    <td>{{ a.full_name }}</td>
+                    <td><span class="badge bg-danger-soft text-danger">P{{ a.triage_priority }}</span></td>
+                    <td>{{ a.chief_complaint }}</td>
+                    <td>{{ a.primary_diagnosis or '—' }}</td>
+                    <td>{{ a.doctor_name or '—' }}</td>
+                    <td>{{ a.bed_number or '—' }}</td>
+                    <td><span class="badge {{ 'bg-success-soft text-success' if a.admission_status == 'ACTIVE' else 'bg-secondary-soft' }}">{{ a.admission_status }}</span></td>
+                    <td class="text-end"><a href="{{ url_for('admissions.detail', admission_id=a.admission_id) }}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="9" class="text-center text-muted py-4">No admissions.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

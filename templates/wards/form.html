@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}New Ward{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Create Ward</h4>
+    <a href="{{ url_for('wards.list_wards') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="hebas-card p-4" style="max-width: 560px;">
+    <form method="post" novalidate>
+        <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">Floor *</label>
+                <input type="number" name="floor_number" class="form-control" value="{{ form.floor_number or '' }}" required></div>
+            <div class="col-md-4"><label class="form-label">Type *</label>
+                <select name="ward_type" class="form-select" required>
+                    <option value="">—</option>
+                    <option value="EMERGENCY" {{ 'selected' if form.ward_type == 'EMERGENCY' }}>EMERGENCY</option>
+                    <option value="RECOVERY" {{ 'selected' if form.ward_type == 'RECOVERY' }}>RECOVERY</option>
+                </select></div>
+            <div class="col-md-4"><label class="form-label">Capacity *</label>
+                <input type="number" name="total_capacity" class="form-control" value="{{ form.total_capacity or '' }}" required></div>
+        </div>
+        <div class="mt-4"><button class="btn btn-primary"><i class="bi bi-check-lg"></i> Create Ward</button></div>
+    </form>
+</div>
+{% endblock %}

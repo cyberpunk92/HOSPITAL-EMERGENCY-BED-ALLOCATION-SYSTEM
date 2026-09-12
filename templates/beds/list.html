@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% from 'partials/stat_cards.html' import status_badge %}
+{% block title %}Beds{% endblock %}
+
+{% block content %}
+<h4 class="mb-3">Bed Management</h4>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-primary-soft"><i class="bi bi-hospital"></i></div><div><div class="stat-value">{{ counts.total }}</div><div class="stat-label">Total</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div><div><div class="stat-value">{{ counts.available }}</div><div class="stat-label">Available</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-danger-soft"><i class="bi bi-person-fill"></i></div><div><div class="stat-value">{{ counts.occupied }}</div><div class="stat-label">Occupied</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-warning-soft"><i class="bi bi-droplet-half"></i></div><div><div class="stat-value">{{ counts.cleaning }}</div><div class="stat-label">Cleaning</div></div></div></div>
+</div>
+
+<div class="hebas-card mb-3">
+    <form class="row g-2 p-3" method="get">
+        <div class="col-md-5"><select name="status" class="form-select">
+            <option value="">All statuses</option>
+            {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if status_filter == s }}>{{ s }}</option>{% endfor %}
+        </select></div>
+        <div class="col-md-5"><select name="ward" class="form-select">
+            <option value="">All wards</option>
+            {% for w in wards %}<option value="{{ w.ward_id }}" {{ 'selected' if ward_filter == w.ward_id|string }}>{{ w.ward_name or w.ward_type }}</option>{% endfor %}
+        </select></div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-primary"><i class="bi bi-funnel"></i> Filter</button></div>
+    </form>
+</div>
+
+<div class="hebas-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Bed</th><th>Ward</th><th>Status</th><th>Patient</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+            {% for b in beds %}
+                <tr>
+                    <td><strong>{{ b.bed_number }}</strong></td>
+                    <td>{{ b.ward_name or '—' }}</td>
+                    <td>{{ status_badge(b.current_status) }}</td>
+                    <td>
+                        {% if b.current_status == 'OCCUPIED' %}{{ b.patient_name or 'Unknown' }}
+                        {% elif b.current_status == 'PENDING_CLEANING' %}<span class="text-muted"><i class="bi bi-droplet-half"></i> Cleaning in progress</span>
+                        {% else %}<span class="text-muted">Not Assigned</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if b.current_status == 'AVAILABLE' %}
+                            {% if waiting %}
+                            <form method="post" action="{{ url_for('beds.assign', bed_id=b.bed_id) }}" class="d-inline-flex gap-1 align-items-center justify-content-end">
+                                <select name="admission_id" class="form-select form-select-sm" style="max-width:200px" required>
+                                    <option value="">Assign patient…</option>
+                                    {% for w in waiting %}<option value="{{ w.admission_id }}">{{ w.full_name }} — {{ w.chief_complaint }}</option>{% endfor %}
+                                </select>
+                                <button class="btn btn-sm btn-primary text-nowrap"><i class="bi bi-person-plus"></i> Assign Bed</button>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-success-soft text-success">Available</span>
+                            {% endif %}
+                        {% elif b.current_status == 'PENDING_CLEANING' %}
+                            <span class="text-muted small"><i class="bi bi-droplet-half"></i> Cleaning</span>
+                        {% else %}
+                            <a href="{{ url_for('beds.detail', bed_id=b.bed_id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No beds match.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

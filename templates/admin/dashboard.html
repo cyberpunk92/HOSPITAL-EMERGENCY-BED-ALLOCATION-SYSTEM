@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h4 class="mb-1">Admin Dashboard</h4>
+<p class="text-muted">{{ hospital_name }} &middot; live overview</p>
+
+<div class="row g-3">
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('admissions.list_admissions') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-accent-soft"><i class="bi bi-calendar-day"></i></div>
+            <div><div class="stat-value">{{ overview.today_patients }}</div><div class="stat-label">Today's Patients</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('patients.list_patients') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-primary-soft"><i class="bi bi-person-lines-fill"></i></div>
+            <div><div class="stat-value">{{ overview.total_patients }}</div><div class="stat-label">Total Patients</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('admissions.list_admissions') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-info-soft"><i class="bi bi-clipboard2-pulse"></i></div>
+            <div><div class="stat-value">{{ overview.active_admissions }}</div><div class="stat-label">Active Admissions</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('beds.list_beds', status='AVAILABLE') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+            <div><div class="stat-value">{{ overview.available_beds }}</div><div class="stat-label">Available Beds</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('beds.list_beds', status='OCCUPIED') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-danger-soft"><i class="bi bi-person-fill"></i></div>
+            <div><div class="stat-value">{{ overview.occupied_beds }}</div><div class="stat-label">Occupied Beds</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('beds.list_beds', status='PENDING_CLEANING') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-warning-soft"><i class="bi bi-droplet-half"></i></div>
+            <div><div class="stat-value">{{ overview.cleaning_beds }}</div><div class="stat-label">Pending Cleaning</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('admin.arrivals') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-accent-soft"><i class="bi bi-truck-front"></i></div>
+            <div><div class="stat-value">{{ overview.pending_arrivals }}</div><div class="stat-label">Pending Arrivals</div></div></div></a>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <a href="{{ url_for('admissions.list_admissions', status='DISCHARGED') }}" class="text-decoration-none">
+        <div class="hebas-card stat h-100"><div class="stat-icon bg-secondary-soft"><i class="bi bi-check2-all"></i></div>
+            <div><div class="stat-value">{{ overview.completed_cases }}</div><div class="stat-label">Completed Cases</div></div></div></a>
+    </div>
+</div>
+
+<!-- Small overview chart: bed mix -->
+<div class="row g-3 mt-1">
+    <div class="col-lg-5">
+        <div class="hebas-card h-100">
+            <div class="hebas-card-header"><i class="bi bi-pie-chart"></i> Bed Status</div>
+            <div class="p-3"><canvas id="bedChart" height="160"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="hebas-card h-100">
+            <div class="hebas-card-header"><i class="bi bi-bar-chart"></i> Patient Flow</div>
+            <div class="p-3"><canvas id="flowChart" height="160"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="hebas-card mt-4 p-4 d-flex flex-wrap gap-2 align-items-center">
+    <span class="text-muted me-2">Quick actions:</span>
+    <a href="{{ url_for('admin.arrivals') }}" class="btn btn-sm btn-primary"><i class="bi bi-truck-front"></i> Arrival Queue</a>
+    <a href="{{ url_for('patients.new') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-person-plus"></i> Register Patient</a>
+    <a href="{{ url_for('patients.list_patients') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> Update Patient</a>
+    <a href="{{ url_for('admissions.list_admissions') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-clipboard2-plus"></i> Admissions</a>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-bar-graph"></i> Complete Report</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const bedCtx = document.getElementById('bedChart');
+    if (bedCtx) new Chart(bedCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Occupied', 'Available', 'Cleaning'],
+            datasets: [{
+                data: [{{ overview.occupied_beds }}, {{ overview.available_beds }}, {{ overview.cleaning_beds }}],
+                backgroundColor: ['#ef4444', '#22c55e', '#f59e0b'],
+            }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+    const flowCtx = document.getElementById('flowChart');
+    if (flowCtx) new Chart(flowCtx, {
+        type: 'bar',
+        data: {
+            labels: ["Today's", 'Active', 'Completed'],
+            datasets: [{
+                label: 'Patients',
+                data: [{{ overview.today_patients }}, {{ overview.active_admissions }}, {{ overview.completed_cases }}],
+                backgroundColor: ['#3b82f6', '#06b6d4', '#64748b'],
+            }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
+})();
+</script>
+{% endblock %}

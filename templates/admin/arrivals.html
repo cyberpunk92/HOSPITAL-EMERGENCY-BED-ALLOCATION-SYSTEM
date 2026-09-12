@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Arrival Queue{% endblock %}
+
+{% block content %}
+<h4 class="mb-3">Arrival Queue <span class="text-muted small">(from dispatchers)</span></h4>
+
+<div class="hebas-card mb-3">
+    <div class="p-3">
+        <input id="queueSearch" class="form-control" placeholder="Search by name or CNIC..."
+               onkeyup="filterQueue()">
+    </div>
+</div>
+
+<div class="hebas-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="queueTable">
+            <thead><tr><th>ID</th><th>Patient</th><th>CNIC</th><th>Complaint</th><th>Rec. Ward</th><th>Rec. Doctor</th><th>Dispatcher</th><th>Status</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+            {% for q in queue %}
+                <tr>
+                    <td>#{{ q.queue_id }}</td>
+                    <td>{{ q.patient_name }}</td>
+                    <td>{{ q.cnic or '—' }}</td>
+                    <td class="small">{{ q.chief_complaint }}</td>
+                    <td class="small">{{ q.ward_name or q.ward_type or '—' }}</td>
+                    <td class="small">{{ q.doctor_name or '—' }}</td>
+                    <td class="small">{{ q.dispatcher_name or '—' }}</td>
+                    <td>
+                        {% if q.arrival_status == 'ARRIVED' %}<span class="badge bg-success-soft text-success">ARRIVED</span>
+                        {% else %}<span class="badge hebas-badge-cleaning">{{ q.arrival_status or 'WAITING' }}</span>{% endif %}
+                    </td>
+                    <td class="text-end">
+                        <form method="post" action="{{ url_for('admin.confirm_arrival', queue_id=q.queue_id) }}" class="d-inline"
+                              data-confirm="Confirm arrival and move '{{ q.patient_name }}' to registration?">
+                            <button class="btn btn-sm btn-primary" data-loading="Confirming..."><i class="bi bi-check2-circle"></i> Confirm &amp; Register</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="9" class="text-center text-muted py-4">Arrival queue is empty.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterQueue() {
+    const q = document.getElementById('queueSearch').value.toLowerCase();
+    document.querySelectorAll('#queueTable tbody tr').forEach(function (row) {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

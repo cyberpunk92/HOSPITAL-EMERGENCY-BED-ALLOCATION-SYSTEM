@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Ward #{{ ward.ward_id }}{% endblock %}
+
+{% set badge = {'AVAILABLE':'bg-success-soft text-success','OCCUPIED':'bg-danger-soft text-danger','PENDING_CLEANING':'bg-warning-soft'} %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Ward #{{ ward.ward_id }}
+        <span class="badge {{ 'bg-danger-soft text-danger' if ward.ward_type == 'EMERGENCY' else 'bg-info-soft text-info' }}">{{ ward.ward_type }}</span>
+    </h4>
+    <a href="{{ url_for('wards.list_wards') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="hebas-card mb-3">
+            <div class="hebas-card-header"><i class="bi bi-hospital"></i> Beds in this Ward ({{ beds|length }})</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Bed</th><th>Type</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for b in beds %}
+                        <tr><td><strong>{{ b.bed_number }}</strong></td><td>{{ b.bed_type }}</td>
+                            <td><span class="badge {{ badge.get(b.current_status,'bg-secondary-soft') }}">{{ b.current_status }}</span></td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">No beds allocated yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-cpu"></i> Ward Equipment</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Equipment</th><th>Qty</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for e in equipment %}
+                        <tr><td>{{ e.equipment_name }}</td><td>{{ e.quantity }}</td><td>{{ e.status }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">No equipment assigned.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="hebas-card mb-3">
+            <div class="hebas-card-header"><i class="bi bi-info-circle"></i> Details</div>
+            <div class="p-3">
+                <dl class="row mb-0 small">
+                    <dt class="col-6">Floor</dt><dd class="col-6">{{ ward.floor_number }}</dd>
+                    <dt class="col-6">Total Capacity</dt><dd class="col-6">{{ ward.total_capacity }}</dd>
+                    <dt class="col-6">Current Capacity</dt><dd class="col-6">{{ ward.current_capacity }}</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-plus-square"></i> Allocate a Bed</div>
+            <form method="post" action="{{ url_for('wards.allocate', ward_id=ward.ward_id) }}" class="p-3">
+                <div class="mb-2">
+                    <select name="bed_id" class="form-select form-select-sm" required>
+                        <option value="">Unallocated beds...</option>
+                        {% for b in unallocated %}<option value="{{ b.bed_id }}">{{ b.bed_number }} ({{ b.bed_type }})</option>{% endfor %}
+                    </select>
+                </div>
+                <button class="btn btn-sm btn-primary w-100" {{ 'disabled' if not unallocated }}>Allocate to this Ward</button>
+                {% if not unallocated %}<div class="form-text">All beds are currently allocated.</div>{% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

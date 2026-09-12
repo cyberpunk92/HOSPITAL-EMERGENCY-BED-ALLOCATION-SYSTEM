@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block title %}Complete Report{% endblock %}
+
+{% block content %}
+<h4 class="mb-3">Complete Report</h4>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-2"><div class="hebas-card stat"><div><div class="stat-value">{{ kpis.total_admissions }}</div><div class="stat-label">Admissions</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="hebas-card stat"><div><div class="stat-value">{{ kpis.active_admissions }}</div><div class="stat-label">Active</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="hebas-card stat"><div><div class="stat-value">{{ kpis.discharged }}</div><div class="stat-label">Discharged</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="hebas-card stat"><div><div class="stat-value">{{ kpis.total_patients }}</div><div class="stat-label">Patients</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="hebas-card stat"><div><div class="stat-value">{{ kpis.open_sanitizations }}</div><div class="stat-label">Open Cleanings</div></div></div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="hebas-card mb-3">
+            <div class="hebas-card-header">
+                <i class="bi bi-bar-chart"></i> Ward Occupancy
+                <form method="post" action="{{ url_for('reports.export', report_key='occupancy') }}" class="ms-auto">
+                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> CSV</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Ward</th><th>Capacity</th><th>Occ</th><th>Avail</th><th>Cleaning</th></tr></thead>
+                    <tbody>
+                    {% for w in occupancy %}
+                        <tr><td>{{ w.ward_name or w.ward_type }}</td><td>{{ w.total_capacity }}</td>
+                            <td>{{ w.beds_occupied }}</td><td>{{ w.beds_available }}</td><td>{{ w.beds_in_maintenance }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="hebas-card">
+            <div class="hebas-card-header">
+                <i class="bi bi-shield-check"></i> Audit Trail (Bed Status)
+                <form method="post" action="{{ url_for('reports.export', report_key='audit') }}" class="ms-auto">
+                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> CSV</button>
+                </form>
+            </div>
+            <div class="table-responsive" style="max-height: 320px; overflow-y:auto;">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Table</th><th>Rec</th><th>From</th><th>To</th><th>When</th></tr></thead>
+                    <tbody>
+                    {% for a in audit %}
+                        <tr><td>{{ a.table_name }}</td><td>#{{ a.record_id }}</td><td>{{ a.old_value }}</td><td>{{ a.new_value }}</td>
+                            <td class="small">{{ a.action_timestamp.strftime('%m-%d %H:%M') if a.action_timestamp else '' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">No audit entries.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="hebas-card mb-3">
+            <div class="hebas-card-header">
+                <i class="bi bi-clipboard-data"></i> Admissions by Status
+                <form method="post" action="{{ url_for('reports.export', report_key='admissions') }}" class="ms-auto">
+                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> CSV</button>
+                </form>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for s in by_status %}
+                <li class="list-group-item d-flex justify-content-between"><span>{{ s.admission_status }}</span><span class="badge bg-primary rounded-pill">{{ s.cnt }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="hebas-card mb-3">
+            <div class="hebas-card-header"><i class="bi bi-thermometer-half"></i> Admissions by Triage Priority</div>
+            <ul class="list-group list-group-flush">
+                {% for p in by_priority %}
+                <li class="list-group-item d-flex justify-content-between"><span>Priority {{ p.triage_priority }}</span><span class="badge bg-danger rounded-pill">{{ p.cnt }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="hebas-card">
+            <div class="hebas-card-header">
+                <i class="bi bi-droplet"></i> Sanitization Status
+                <form method="post" action="{{ url_for('reports.export', report_key='sanitization') }}" class="ms-auto">
+                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-download"></i> CSV</button>
+                </form>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for s in sanitization %}
+                <li class="list-group-item d-flex justify-content-between"><span>{{ s.checking_status }}</span><span class="badge bg-secondary rounded-pill">{{ s.cnt }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-6">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-clipboard2-pulse"></i> Doctor Workload</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Doctor</th><th>Specialization</th><th class="text-end">Active Patients</th></tr></thead>
+                    <tbody>
+                    {% for d in doctor_workload %}
+                        <tr><td>{{ d.doctor_name }}</td><td class="small">{{ d.specialization or '—' }}</td>
+                            <td class="text-end"><span class="badge bg-primary rounded-pill">{{ d.active_patients }}</span></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-heart-pulse"></i> Nurse Workload</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Nurse</th><th>Ward</th><th class="text-end">Patients</th><th class="text-end">Pending Tasks</th></tr></thead>
+                    <tbody>
+                    {% for n in nurse_workload %}
+                        <tr><td>{{ n.nurse_name }}</td><td>{{ n.assigned_ward or '—' }}</td>
+                            <td class="text-end">{{ n.ward_patients }}</td><td class="text-end">{{ n.pending_tasks }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-6">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-box-arrow-right"></i> Discharge Report</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Adm</th><th>Patient</th><th>Diagnosis</th><th>Discharged</th></tr></thead>
+                    <tbody>
+                    {% for d in discharges %}
+                        <tr><td>#{{ d.admission_id }}</td><td>{{ d.full_name }}</td><td class="small">{{ d.primary_diagnosis or '—' }}</td>
+                            <td class="small">{{ d.discharge_timestamp.strftime('%Y-%m-%d %H:%M') if d.discharge_timestamp else '—' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-3">No discharges.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-box-seam"></i> Equipment Report</div>
+            <div class="table-responsive" style="max-height: 320px; overflow-y:auto;">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead><tr><th>Equipment</th><th>Status</th><th class="text-end">Qty</th></tr></thead>
+                    <tbody>
+                    {% for e in equipment %}
+                        <tr><td>{{ e.equipment_name }}</td><td><span class="badge {{ 'bg-success-soft text-success' if e.status == 'FUNCTIONAL' else 'bg-warning-soft' }}">{{ e.status }}</span></td>
+                            <td class="text-end">{{ e.quantity }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

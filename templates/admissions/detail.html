@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}Admission #{{ adm.admission_id }}{% endblock %}
+
+{% block content %}
+{% set is_admin = 'Admin Staff' in user.roles %}
+{% set is_doctor = 'Emergency Doctor' in user.roles or 'Ward Doctor' in user.roles %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Admission #{{ adm.admission_id }} — {{ adm.full_name }}</h4>
+    <a href="{{ url_for('admissions.list_admissions') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="row g-3">
+    <!-- Summary -->
+    <div class="col-lg-4">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-clipboard2-pulse"></i> Summary</div>
+            <div class="p-3">
+                <dl class="row mb-0 small">
+                    <dt class="col-5">Status</dt><dd class="col-7"><span class="badge {{ 'bg-success-soft text-success' if adm.admission_status == 'ACTIVE' else 'bg-secondary-soft' }}">{{ adm.admission_status }}</span></dd>
+                    <dt class="col-5">Triage</dt><dd class="col-7">Priority {{ adm.triage_priority }}</dd>
+                    <dt class="col-5">Patient</dt><dd class="col-7">{{ adm.full_name }} ({{ adm.age }}, {{ adm.gender }})</dd>
+                    <dt class="col-5">National ID</dt><dd class="col-7">{{ adm.national_id }}</dd>
+                    <dt class="col-5">Complaint</dt><dd class="col-7">{{ adm.chief_complaint }}</dd>
+                    <dt class="col-5">Diagnosis</dt><dd class="col-7">{{ adm.primary_diagnosis or '—' }}</dd>
+                    <dt class="col-5">Doctor</dt><dd class="col-7">{{ adm.doctor_name or '—' }}</dd>
+                    <dt class="col-5">Bed</dt><dd class="col-7">{{ adm.bed_number or '—' }}</dd>
+                    <dt class="col-5">Arrival</dt><dd class="col-7">{{ adm.arrival_timestamp.strftime('%Y-%m-%d %H:%M') if adm.arrival_timestamp else '—' }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow -->
+    <div class="col-lg-8">
+        {% if adm.admission_status == 'ACTIVE' %}
+        <div class="row g-3">
+            {% if is_admin %}
+            <!-- 1. Doctor (admin) -->
+            <div class="col-md-6">
+                <div class="hebas-card h-100">
+                    <div class="hebas-card-header">1 &middot; Assign Doctor</div>
+                    <div class="p-3">
+                        <form method="post" action="{{ url_for('admissions.assign_doctor', admission_id=adm.admission_id) }}" class="d-flex gap-2">
+                            <select name="doctor_id" class="form-select form-select-sm" required>
+                                <option value="">Select doctor...</option>
+                                {% for d in doctors %}<option value="{{ d.doctor_id }}" {{ 'selected' if adm.assigned_doctor == d.doctor_id }}>{{ d.name }} — {{ d.specialization }}</option>{% endfor %}
+                            </select>
+                            <button class="btn btn-sm btn-primary text-nowrap">Assign</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if is_doctor %}
+            <!-- 2. Diagnosis (doctor) -->
+            <div class="col-md-6">
+                <div class="hebas-card h-100">
+                    <div class="hebas-card-header">Diagnosis</div>
+                    <div class="p-3">
+                        <form method="post" action="{{ url_for('admissions.diagnose', admission_id=adm.admission_id) }}" class="d-flex gap-2">
+                            <input name="diagnosis" class="form-control form-control-sm" value="{{ adm.primary_diagnosis or '' }}" placeholder="Primary diagnosis" required>
+                            <button class="btn btn-sm btn-primary text-nowrap">Save</button>
+                        </form>
+                        <div class="form-text">Required before a bed can be assigned.</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if is_doctor %}
+            <!-- Admit (doctor decision -> system auto-assigns a bed) -->
+            <div class="col-md-6">
+                <div class="hebas-card h-100">
+                    <div class="hebas-card-header">Admit to Ward</div>
+                    <div class="p-3">
+                        {% if adm.admit_status == 'ADMITTED' %}
+                            {% if adm.bed_number %}
+                            <p class="mb-0 text-success"><i class="bi bi-check-circle"></i> Admitted &mdash; bed <strong>{{ adm.bed_number }}</strong> auto-assigned.</p>
+                            {% else %}
+                            <p class="mb-0 text-warning"><i class="bi bi-hourglass-split"></i> Admitted &mdash; waiting for an available bed.</p>
+                            {% endif %}
+                        {% else %}
+                        <form method="post" action="{{ url_for('admissions.admit', admission_id=adm.admission_id) }}">
+                            <button class="btn btn-sm btn-primary"><i class="bi bi-hospital"></i> Admit Patient</button>
+                            <div class="form-text">Requires a diagnosis. A bed is assigned automatically.</div>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if is_doctor %}
+            <!-- Discharge (doctor) -->
+            <div class="col-md-6">
+                <div class="hebas-card h-100">
+                    <div class="hebas-card-header">Discharge</div>
+                    <div class="p-3">
+                        <form method="post" action="{{ url_for('admissions.discharge', admission_id=adm.admission_id) }}"
+                              data-confirm="Discharge this patient? The bed will be flagged for sanitization.">
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Discharge Patient</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if is_doctor %}
+        <div class="row g-3 mt-1">
+            <!-- Assign Nurse Task -->
+            <div class="col-md-8">
+                <div class="hebas-card h-100">
+                    <div class="hebas-card-header"><i class="bi bi-heart-pulse"></i> Assign Nurse Task</div>
+                    <div class="p-3">
+                        <form method="post" action="{{ url_for('admissions.assign_nurse', admission_id=adm.admission_id) }}">
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small mb-1">Nurse</label>
+                                    <select name="nurse_id" class="form-select form-select-sm" required>
+                                        <option value="">Select nurse...</option>
+                                        {% for n in nurses %}<option value="{{ n.nurse_id }}">{{ n.name }}</option>{% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small mb-1">Task(s)</label>
+                                    <select name="tasks" class="form-select form-select-sm" multiple size="4" required>
+                                        {% for t in task_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                                    </select>
+                                    <div class="form-text">Hold Ctrl / Cmd to pick more than one.</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-primary mt-2"><i class="bi bi-send"></i> Assign Task(s)</button>
+                        </form>
+
+                        <hr>
+                        <div class="small">
+                            {% if assigned_nurses %}
+                                <strong>Assigned nurse:</strong>
+                                {% for a in assigned_nurses %}
+                                <div class="mt-1"><i class="bi bi-person-check text-success"></i> {{ a.nurse_name }}
+                                    {% if a.tasks %}<span class="text-muted">&mdash; {{ a.tasks }}</span>{% endif %}</div>
+                                {% endfor %}
+                                {% if nurse_history and nurse_history|length > assigned_nurses|length %}
+                                <a class="small" data-bs-toggle="collapse" href="#prevNurses">View Previous Nurses</a>
+                                <div class="collapse mt-1" id="prevNurses">
+                                    {% for h in nurse_history %}
+                                    <div class="text-muted"><i class="bi bi-clock-history"></i> {{ h.nurse_name }}
+                                        &middot; {{ h.assigned_date.strftime('%Y-%m-%d %H:%M') if h.assigned_date else '' }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">No Nurse Assigned Yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Transfer -->
+            <div class="col-md-4">
+                <div class="hebas-card h-100">
+                    <div class="hebas-card-header"><i class="bi bi-arrow-left-right"></i> Transfer Ward</div>
+                    <div class="p-3">
+                        <form method="post" action="{{ url_for('admissions.transfer', admission_id=adm.admission_id) }}" class="d-flex gap-2">
+                            <select name="to_ward" class="form-select form-select-sm" required>
+                                <option value="">Target ward...</option>
+                                {% for w in wards %}<option value="{{ w.ward_id }}">{{ w.ward_name or w.ward_type }}</option>{% endfor %}
+                            </select>
+                            <button class="btn btn-sm btn-primary text-nowrap">Move</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}{# is_doctor row 2 #}
+        {% else %}
+        <div class="hebas-card p-4 text-center text-muted">
+            This admission is <strong>{{ adm.admission_status }}</strong>{% if adm.discharge_timestamp %} (discharged {{ adm.discharge_timestamp.strftime('%Y-%m-%d %H:%M') }}){% endif %}.
+        </div>
+        {% endif %}
+
+        {% if is_doctor %}
+        <div class="hebas-card mt-3">
+            <div class="hebas-card-header"><i class="bi bi-activity"></i> Nurse Results
+                <span class="ms-auto small">Glucose Strip:
+                    {% if results.glucose %}<span class="badge bg-success-soft text-success">{{ results.glucose.result_status }}</span>
+                    {% else %}<span class="badge bg-secondary-soft text-muted">Not done</span>{% endif %}</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead><tr><th>BP Result</th><th>Sugar Result</th><th>Recorded</th></tr></thead>
+                    <tbody>
+                    {% for v in results.vitals %}
+                        <tr><td>{% if v.systolic_bp %}{{ v.systolic_bp }}/{{ v.diastolic_bp }}{% else %}—{% endif %}</td>
+                            <td>{{ v.glucose_level or '—' }}</td>
+                            <td class="small">{{ v.recorded_at.strftime('%Y-%m-%d %H:%M') if v.recorded_at else '' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">No results recorded by nurse yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}{# is_doctor lower row #}
+    </div>
+</div>
+{% endblock %}

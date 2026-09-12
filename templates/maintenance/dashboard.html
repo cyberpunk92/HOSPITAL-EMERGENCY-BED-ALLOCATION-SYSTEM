@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Maintenance{% endblock %}
+
+{% block content %}
+<h4 class="mb-1">Maintenance Control</h4>
+<p class="text-muted">{{ user.name }} &middot; {{ hospital_name }}</p>
+
+{% set full_wards = wards_capacity | selectattr('available', 'equalto', 0) | list %}
+{% set low_stock = glucose_stock | selectattr('quantity', 'lt', 2) | list %}
+
+<!-- At-a-glance stats -->
+<div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-primary-soft"><i class="bi bi-hospital"></i></div>
+        <div><div class="stat-value">{{ wards_capacity|length }}</div><div class="stat-label">Active Wards</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-danger-soft"><i class="bi bi-exclamation-octagon"></i></div>
+        <div><div class="stat-value">{{ full_wards|length }}</div><div class="stat-label">Full Wards</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-warning-soft"><i class="bi bi-droplet-half"></i></div>
+        <div><div class="stat-value">{{ low_stock|length }}</div><div class="stat-label">Low Strip Stock</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="hebas-card stat"><div class="stat-icon bg-info-soft"><i class="bi bi-bell"></i></div>
+        <div><div class="stat-value">{{ requests|selectattr('request_status','ne','RESOLVED')|list|length }}</div><div class="stat-label">Open Requests</div></div></div></div>
+</div>
+
+<div class="row g-3">
+    <!-- 1. Glucose Strip Refill -->
+    <div class="col-lg-6">
+        <div class="hebas-card h-100">
+            <div class="hebas-card-header"><i class="bi bi-droplet"></i> Glucose Strip Refill</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Ward</th><th class="text-center">In Stock</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                    {% for w in glucose_stock %}
+                        <tr>
+                            <td>{{ w.ward_name }}</td>
+                            <td class="text-center">
+                                <span class="badge {{ 'bg-danger-soft text-danger' if w.quantity < 2 else 'bg-success-soft text-success' }}">{{ w.quantity }}</span>
+                            </td>
+                            <td class="text-end">
+                                <form method="post" action="{{ url_for('maintenance.refill') }}" class="d-inline">
+                                    <input type="hidden" name="ward_id" value="{{ w.ward_id }}">
+                                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Add Strips (+{{ refill_batch }})</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">No active wards.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-2 small text-muted">When a nurse deploys a strip the count drops and a refill alert lands here. One click restocks the ward instantly.</div>
+        </div>
+    </div>
+
+    <!-- 2. Add Bed -->
+    <div class="col-lg-6">
+        <div class="hebas-card h-100">
+            <div class="hebas-card-header"><i class="bi bi-plus-square"></i> Add Bed</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>Ward</th><th class="text-center">Occupied / Total</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                    {% for w in wards_capacity %}
+                        <tr class="{{ 'table-danger' if w.available == 0 }}">
+                            <td>{{ w.ward_name }}</td>
+                            <td class="text-center">{{ w.occupied }} / {{ w.total }}
+                                {% if w.available == 0 %}<span class="badge bg-danger-soft text-danger ms-1">FULL</span>{% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form method="post" action="{{ url_for('maintenance.add_bed') }}" class="d-inline">
+                                    <input type="hidden" name="ward_id" value="{{ w.ward_id }}">
+                                    <button class="btn btn-sm {{ 'btn-danger' if w.available == 0 else 'btn-outline-secondary' }}"><i class="bi bi-plus-lg"></i> Add Bed</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-center text-muted py-3">No active wards.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-2 small text-muted">When every bed in a ward is occupied the system raises an add-bed alert. Click <strong>Add Bed</strong> and a new bed is created and made available immediately.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

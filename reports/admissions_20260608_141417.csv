@@ -1,0 +1,37 @@
+admission_id,full_name,triage_priority,chief_complaint,admission_status,arrival_timestamp
+48,Bushra Ansari,4,Severe Pain,ACTIVE,2026-06-08 14:09:58.082000
+47,ALI,4,TYPE,ACTIVE,2026-06-08 13:59:48.487000
+46,Auto Triage,5,Severe chest pain auto,ACTIVE,2026-06-08 13:42:45.542000
+45,Enh Test,5,Enh workflow test,ACTIVE,2026-06-08 13:42:45.303000
+44,Auto Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 13:42:43.382000
+43,Auto Triage,5,Severe chest pain auto,ACTIVE,2026-06-08 13:33:30.961000
+42,Enh Test,5,Enh workflow test,ACTIVE,2026-06-08 13:33:30.734000
+41,Auto Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 13:33:29.053000
+40,Auto Test Patient,4,E2E chest pain test,ACTIVE,2026-06-08 13:32:22.122000
+39,Enh Test,5,Enh workflow test,ACTIVE,2026-06-08 13:32:01.311000
+38,Auto Test Patient,4,E2E chest pain test,ACTIVE,2026-06-08 13:31:59.507000
+37,Auto Triage,5,Severe chest pain auto,ACTIVE,2026-06-08 13:21:40.385000
+36,Enh Test,5,Enh workflow test,ACTIVE,2026-06-08 13:21:39.986000
+34,Enh Test,5,Enh workflow test,ACTIVE,2026-06-08 13:20:31.980000
+33,Auto Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 13:20:29.641000
+32,tom,5,burn,ACTIVE,2026-06-08 11:59:58.179000
+31,ALI,4,cardiac,ACTIVE,2026-06-08 11:22:38.675000
+30,Enh Test,5,Severe chest pain auto,ACTIVE,2026-06-08 10:54:41.744000
+29,Enh Test,5,Enh workflow test,CANCELLED,2026-06-08 10:54:41.394000
+28,Auto Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 10:54:36.486000
+27,Enh Test,5,Severe chest pain auto,ACTIVE,2026-06-08 10:52:48.305000
+26,Enh Test,5,Enh workflow test,CANCELLED,2026-06-08 10:52:46.992000
+25,Malik,4,he is a heart patient and pain in heart,DISCHARGED,2026-06-08 09:34:41.284000
+24,E2E Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 05:28:27.090000
+23,Enh Test,5,Severe chest pain auto,ACTIVE,2026-06-08 05:27:49.935000
+22,Enh Test,5,Enh workflow test,CANCELLED,2026-06-08 05:27:48.446000
+21,E2E Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 05:15:01.427000
+9,E2E Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 04:30:44.505000
+8,E2E Test Patient,4,E2E chest pain test,DISCHARGED,2026-06-08 04:16:38.268000
+7,Rizwan Waqar,2,Sprained ankle,ACTIVE,2026-06-08 03:52:17.117000
+6,Amna Gul,5,"Anaphylactic shock, difficulty breathing",ACTIVE,2026-06-08 03:52:17.104000
+5,Kashif Mehmood,5,"Unresponsive, suspected stroke",ACTIVE,2026-06-08 03:22:17.081000
+1,Ahmad Raza,5,"Severe chest pain, suspected myocardial infarction",ACTIVE,2026-06-08 01:52:17.002000
+2,Sadia Imran,4,Blunt force trauma from motor vehicle accident,ACTIVE,2026-06-07 22:52:17.046000
+3,Zohaib Hassan,3,High grade fever and shortness of breath,ACTIVE,2026-06-07 03:52:17.049000
+4,Maryam Nawaz,2,Minor laceration on right arm,DISCHARGED,2026-06-05 03:52:17.070000

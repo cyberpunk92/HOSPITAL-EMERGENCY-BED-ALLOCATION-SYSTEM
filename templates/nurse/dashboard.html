@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Nurse Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2">
+    <h4 class="mb-0">Welcome, {{ user.name }}</h4>
+    <div class="d-flex gap-2">
+        <span class="badge bg-success-soft text-success p-2"><i class="bi bi-droplet"></i> Glucose Strips: {{ equipment.get('Glucose Strips', 0) }}</span>
+        <span class="badge bg-info-soft text-info p-2"><i class="bi bi-heart-pulse"></i> BP Machines: {{ equipment.get('BP Machine', 0) }}</span>
+        <span class="badge bg-primary-soft text-primary p-2"><i class="bi bi-clipboard-data"></i> Sugar Machines: {{ equipment.get('Sugar Machine', 0) }}</span>
+    </div>
+</div>
+<p class="text-muted">
+    {% if profile and profile.assigned_ward %}{{ profile.ward_name or 'Unassigned ward' }} &middot; {{ profile.shift_timing }} shift{% endif %}
+</p>
+
+<div class="row g-3">
+{% for p in patients %}
+    {% set my_tasks = tasks.get(p.admission_id, []) %}
+    <div class="col-lg-6">
+        <div class="hebas-card h-100">
+            <div class="hebas-card-header d-flex justify-content-between">
+                <span><i class="bi bi-person"></i> {{ p.full_name }}</span>
+                <span class="small text-muted">Bed {{ p.bed_number or '—' }} &middot; {{ p.ward_name or '—' }}</span>
+            </div>
+            <div class="p-3">
+                <div class="small text-muted mb-2">Dr. {{ p.doctor_name or '—' }} &middot; {{ p.primary_diagnosis or p.chief_complaint }}</div>
+
+                <!-- Assigned tasks (set by the doctor) -->
+                <div class="mb-2">
+                    <span class="small fw-semibold me-1">Assigned tasks:</span>
+                    {% if my_tasks %}
+                        {% for t in my_tasks %}<span class="badge bg-info-soft text-info me-1">{{ t }}</span>{% endfor %}
+                    {% else %}
+                        <span class="small text-muted">None assigned by doctor yet.</span>
+                    {% endif %}
+                </div>
+
+                <div class="row g-2">
+                    {% if 'Check BP' in my_tasks %}
+                    <!-- BP -->
+                    <div class="col-md-6">
+                        <form method="post" action="{{ url_for('nurse.bp') }}" novalidate data-validate class="border rounded p-2">
+                            <input type="hidden" name="admission_id" value="{{ p.admission_id }}">
+                            <label class="form-label small mb-1 fw-semibold">Check BP</label>
+                            <div class="d-flex gap-1">
+                                <input name="systolic" class="form-control form-control-sm" placeholder="Sys" data-rule="required numeric" inputmode="numeric" required>
+                                <input name="diastolic" class="form-control form-control-sm" placeholder="Dia" data-rule="required numeric" inputmode="numeric" required>
+                                <button class="btn btn-sm btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% if 'Check Sugar' in my_tasks %}
+                    <!-- Sugar -->
+                    <div class="col-md-6">
+                        <form method="post" action="{{ url_for('nurse.sugar') }}" novalidate data-validate class="border rounded p-2">
+                            <input type="hidden" name="admission_id" value="{{ p.admission_id }}">
+                            <label class="form-label small mb-1 fw-semibold">Check Sugar</label>
+                            <div class="d-flex gap-1">
+                                <input name="sugar" class="form-control form-control-sm" placeholder="mg/dL" data-rule="required positive_int" inputmode="numeric" required>
+                                <button class="btn btn-sm btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    {% if 'Deploy Glucose Strip' in my_tasks or 'Give Medicine' in my_tasks %}
+                    <!-- Glucose strip + Medicine -->
+                    <div class="col-12 d-flex gap-2">
+                        {% if 'Deploy Glucose Strip' in my_tasks %}
+                        <form method="post" action="{{ url_for('nurse.glucose') }}" class="glucose-form flex-fill">
+                            <input type="hidden" name="admission_id" value="{{ p.admission_id }}">
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100 glucose-btn" onclick="glucoseStrip(this)">
+                                <i class="bi bi-hourglass"></i> Deploy Glucose Strip
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if 'Give Medicine' in my_tasks %}
+                        <form method="post" action="{{ url_for('nurse.medicine') }}" class="flex-fill">
+                            <input type="hidden" name="admission_id" value="{{ p.admission_id }}">
+                            <button class="btn btn-sm btn-outline-success w-100"><i class="bi bi-capsule"></i> Give Medicine</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% set vs = vitals.get(p.admission_id) %}
+                {% if vs %}
+                <div class="mt-2 small">
+                    <span class="text-muted">Recent:</span>
+                    {% for v in vs %}
+                        <span class="badge bg-light text-dark border me-1">
+                            {% if v.systolic_bp %}BP {{ v.systolic_bp }}/{{ v.diastolic_bp }}{% endif %}
+                            {% if v.glucose_level %}Sugar {{ v.glucose_level }}{% endif %}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="col-12"><div class="hebas-card p-5 text-center text-muted">
+        <i class="bi bi-clipboard-x" style="font-size:2rem;"></i>
+        <p class="mb-0 mt-2">No patients are currently assigned to you.</p>
+    </div></div>
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 3-second glucose-strip simulation, then submit + notify maintenance.
+function glucoseStrip(btn) {
+    let s = 3;
+    btn.disabled = true;
+    const tick = () => btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Reading ' + s + 's';
+    tick();
+    const t = setInterval(function () {
+        s--;
+        if (s <= 0) { clearInterval(t); btn.closest('form').submit(); }
+        else tick();
+    }, 1000);
+}
+</script>
+{% endblock %}

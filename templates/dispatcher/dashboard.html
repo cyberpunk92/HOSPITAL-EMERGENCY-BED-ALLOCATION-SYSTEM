@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% from 'partials/stat_cards.html' import status_badge %}
+{% block title %}Dispatcher{% endblock %}
+
+{% block content %}
+<h4 class="mb-1">Emergency Dispatch</h4>
+<p class="text-muted">{{ user.name }} &middot; {{ hospital_name }}</p>
+
+<!-- CMH Bed Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-4"><div class="hebas-card stat"><div class="stat-icon bg-primary-soft"><i class="bi bi-hospital"></i></div>
+        <div><div class="stat-value">{{ beds.total }}</div><div class="stat-label">Total Beds</div></div></div></div>
+    <div class="col-4"><div class="hebas-card stat"><div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+        <div><div class="stat-value">{{ beds.available }}</div><div class="stat-label">Available</div></div></div></div>
+    <div class="col-4"><div class="hebas-card stat"><div class="stat-icon bg-danger-soft"><i class="bi bi-person-fill"></i></div>
+        <div><div class="stat-value">{{ beds.occupied }}</div><div class="stat-label">Occupied</div></div></div></div>
+</div>
+
+<div class="row g-3">
+    <!-- Pre-registration -->
+    <div class="col-lg-5">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-person-plus"></i> Register Emergency Patient</div>
+            <form method="post" action="{{ url_for('dispatcher.register') }}" class="p-3" novalidate data-validate>
+                <div class="mb-3">
+                    <label class="form-label">CNIC *</label>
+                    <input name="cnic" class="form-control" placeholder="13 digits" data-rule="required cnic"
+                           inputmode="numeric" maxlength="13" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Patient Name *</label>
+                    <input name="patient_name" class="form-control" data-rule="required name" minlength="2" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Chief Complaint *</label>
+                    <select name="chief_complaint" id="complaint" class="form-select" data-rule="required" required onchange="suggest()">
+                        <option value="">Select complaint...</option>
+                        {% for c in complaints %}
+                        <option value="{{ c.complaint_name }}"
+                                data-ward="{{ c.ward_name or c.ward_type }}"
+                                data-doctor="{{ c.doctor_name or '—' }}">{{ c.complaint_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small">Recommended Ward</label>
+                        <input id="recWard" class="form-control form-control-sm bg-light" readonly placeholder="—">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Recommended Doctor</label>
+                        <input id="recDoctor" class="form-control form-control-sm bg-light" readonly placeholder="—">
+                    </div>
+                </div>
+                <button class="btn btn-primary w-100" data-loading="Submitting...">
+                    <i class="bi bi-send"></i> Submit to Arrival Queue
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- This dispatcher's queue -->
+    <div class="col-lg-7">
+        <div class="hebas-card">
+            <div class="hebas-card-header"><i class="bi bi-list-check"></i> My Arrival Queue ({{ queue|length }})</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead><tr><th>CNIC</th><th>Patient</th><th>Complaint</th><th>Rec. Ward</th><th>Rec. Doctor</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for q in queue %}
+                        <tr>
+                            <td>{{ q.cnic }}</td>
+                            <td>{{ q.patient_name }}</td>
+                            <td class="small">{{ q.chief_complaint }}</td>
+                            <td class="small">{{ q.ward_name or q.ward_type or '—' }}</td>
+                            <td class="small">{{ q.doctor_name or '—' }}</td>
+                            <td>{{ status_badge(q.arrival_status) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No patients registered yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function suggest() {
+    const sel = document.getElementById('complaint');
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('recWard').value = opt.dataset.ward || '';
+    document.getElementById('recDoctor').value = opt.dataset.doctor || '';
+}
+</script>
+{% endblock %}
