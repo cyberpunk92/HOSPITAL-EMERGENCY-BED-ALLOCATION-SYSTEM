@@ -16,7 +16,6 @@ Developed as a robust database and software engineering solution, HEBAS ensures 
 
 ### 🔐 Authentication & UI Components
 ![Login Screen](screenshots/01_login.png)
-![Mobile Sidebar](screenshots/13_mobile_sidebar.png)
 ![System Toasts & Notifications](screenshots/adm_toast.png)
 
 ### 👑 Administrator & Management
